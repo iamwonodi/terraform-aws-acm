@@ -737,7 +737,7 @@ For example:
 
 ```hcl
 module "acm" {
-  source = "git::https://github.com/iamwonodi/terraform-aws-acm.git?ref=v1.0.0"
+  source = "git::https://github.com/iamwonodi/terraform-aws-acm.git?ref=v1.0.1"
 
   project_name = "my-application"
   environment  = "production"
@@ -800,6 +800,12 @@ From the module root:
 terraform fmt -recursive
 terraform init
 terraform validate
+```
+
+Run the plan tests (mocked AWS provider, no credentials needed):
+
+```powershell
+terraform test
 ```
 
 Validate the complete example:
@@ -915,17 +921,24 @@ Important certificate properties such as Region, validation method, hosted zone,
 
 This module uses Git tags for releases.
 
-Example:
+Current release:
 
 ```text
-v1.0.0
+v1.0.1
 ```
+
+`v1.0.1` fixes DNS validation records:
+
+* Records are keyed by the validated domain name instead of `<zone ID>:<domain>`, so the module plans when the hosted zone is created in the same apply (its ID is unknown until then).
+* A domain and its wildcard (`example.com`, `*.example.com`), and the same domain on certificates in several Regions, share one record. `v1.0.0` failed on these with duplicate keys.
+
+Inputs and outputs are unchanged.
 
 Consume a released version:
 
 ```hcl
 module "acm" {
-  source = "git::https://github.com/iamwonodi/terraform-aws-acm.git?ref=v1.0.0"
+  source = "git::https://github.com/iamwonodi/terraform-aws-acm.git?ref=v1.0.1"
 
   # ...
 }
@@ -943,6 +956,12 @@ After modifying the module:
 terraform fmt -recursive
 terraform init
 terraform validate
+```
+
+Run the plan tests (mocked AWS provider, no credentials needed):
+
+```powershell
+terraform test
 ```
 
 Validate the complete example:

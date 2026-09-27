@@ -94,8 +94,11 @@ resource "aws_route53_record" "validation" {
   # ---------------------------------------------------------------------------
   # ACM Validation Record Name
   # ---------------------------------------------------------------------------
+  # ACM lists a wildcard and its base name as two entries with the same
+  # record, so the matches are de-duplicated before one() takes the record.
+  # ---------------------------------------------------------------------------
 
-  name = one([
+  name = one(distinct([
     for dvo in aws_acm_certificate.this[each.value.certificate_name].domain_validation_options :
     dvo.resource_record_name
     if(
@@ -106,14 +109,14 @@ resource "aws_route53_record" "validation" {
         trimprefix(dvo.domain_name, "*.") == each.value.normalized_name
       )
     )
-  ])
+  ]))
 
   # ---------------------------------------------------------------------------
   # ACM Validation Record Value
   # ---------------------------------------------------------------------------
 
   records = [
-    one([
+    one(distinct([
       for dvo in aws_acm_certificate.this[each.value.certificate_name].domain_validation_options :
       dvo.resource_record_value
       if(
@@ -124,14 +127,14 @@ resource "aws_route53_record" "validation" {
           trimprefix(dvo.domain_name, "*.") == each.value.normalized_name
         )
       )
-    ])
+    ]))
   ]
 
   # ---------------------------------------------------------------------------
   # ACM Validation Record Type
   # ---------------------------------------------------------------------------
 
-  type = one([
+  type = one(distinct([
     for dvo in aws_acm_certificate.this[each.value.certificate_name].domain_validation_options :
     dvo.resource_record_type
     if(
@@ -142,7 +145,7 @@ resource "aws_route53_record" "validation" {
         trimprefix(dvo.domain_name, "*.") == each.value.normalized_name
       )
     )
-  ])
+  ]))
 
   zone_id = each.value.zone_id
 
